@@ -81,7 +81,7 @@ namespace SDProject1
                     nextPathNode = PathNodeMgr.Inst.GetNextNode(nextPathNode.nodeId);
                     if (nextPathNode.waitInNode)
                     {
-                        this.waitTime = GetRandomWaitTime();
+                        this.waitTime = PathNodeMgr.Inst.GetRandomWaitTime();
                     }
                 }
             }
@@ -135,9 +135,6 @@ namespace SDProject1
             this.speed = Random.Range(5.0f, 11.0f);//random speed
             waitTime = 0f;
         }
-        float GetRandomWaitTime()
-        {
-            return Random.Range(1.0f, 10f);
-        }
+
     }
 }

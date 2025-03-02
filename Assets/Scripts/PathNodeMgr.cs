@@ -10,11 +10,18 @@ namespace SDProject1
         public Transform pathNodeContainer;
 
         public List<Vehicle> vehicles = new List<Vehicle>();
-        public Text carCountText;
-        public InputField timeInputField;
-        public Toggle autoAddCarToggle;
-        float autoAddCarTimeInterval = 5f;
+        //float ArriveTimer = 5f;
+        float ArriveTimeInterval_average = 5f;
         float autoAddCarTimer = 0f;
+        float serviceWaitTime = 4f;
+        #region UI 
+        public Text carCountText;
+        public Text text_arrive;
+        public Text text_service;
+        public Slider slider_arrive;
+        public Slider slider_service;
+
+        #endregion
         private void Awake()
         {
             Inst = this;
@@ -46,7 +53,6 @@ namespace SDProject1
         }
 
         public float nearDistance = 2f;
-        public float nearDistance2 = 0.5f;
         public bool IsNearOtherCarTail(Vehicle self)
         {
             var headPos = self.headPos();
@@ -56,8 +62,6 @@ namespace SDProject1
                 if (v.IsReady() == false) continue;
                 if (Vector3.Distance(v.tailPos(), headPos) < nearDistance)
                     return true;
-                //if (Vector3.Distance(v.transform.position, self.transform.position) < nearDistance2)
-                //    return true;
             }
             return false;
         }
@@ -112,21 +116,29 @@ namespace SDProject1
                 string msg = $"cars in service: {waitingCarCount}";
                 carCountText.text = msg;
             }
-            if (timeInputField != null)
-                if (float.TryParse(timeInputField.text, out float inputTime))
-                {
-                    autoAddCarTimeInterval = inputTime;
-                }
-            if (autoAddCarToggle != null)
-                if (autoAddCarToggle.isOn && autoAddCarTimeInterval > 2f)
-                {
-                    autoAddCarTimer += Time.deltaTime;
-                    if (autoAddCarTimer >= autoAddCarTimeInterval)
-                    {
-                        autoAddCarTimer = 0;
-                        AddACar();
-                    }
-                }
+            if (slider_arrive != null)
+            {
+                ArriveTimeInterval_average = slider_arrive.value;
+            }
+            if (slider_service != null)
+            {
+                serviceWaitTime = slider_service.value;
+            }
+            if (text_arrive != null)
+            {
+                text_arrive.text = $"Arrive interval: {ArriveTimeInterval_average.ToString("F2")}";
+            }
+            if (text_service != null)
+            {
+                text_service.text = $"Average Service time: {serviceWaitTime.ToString("F2")}";
+            }
+            autoAddCarTimer += Time.deltaTime;
+            if (autoAddCarTimer >= ArriveTimeInterval_average)
+            {
+                autoAddCarTimer = 0;
+                AddACar();
+            }
+
         }
         public Transform carEnterPoint;
         public GameObject carPrefab;
@@ -139,36 +151,52 @@ namespace SDProject1
             this.vehicles.Add(script);
             newCar.transform.position = carEnterPoint.position;
         }
+
+        public float GetRandomWaitTime()
+        {
+            float mean = serviceWaitTime;// 240.19f / 50f;
+            float stdDev = 118.32f / 50f; // Standard deviation
+
+            // Box-Muller Transform to generate a normally distributed random number
+            float u1 = 1.0f - Random.value; // Uniform(0,1] random number
+            float u2 = 1.0f - Random.value;
+
+            float randStdNormal = Mathf.Sqrt(-2.0f * Mathf.Log(u1)) * Mathf.Sin(2.0f * Mathf.PI * u2);
+            float randNormal = mean + stdDev * randStdNormal; // Scale to mean and std dev
+
+            return randNormal;
+        }
+ 
     }
+}
 
 
-    public class ObjPool
+public class ObjPool
+{
+    private List<GameObject> objList = new List<GameObject>();
+    public GameObject objPrefab;
+    public ObjPool(GameObject obj)
     {
-        private List<GameObject> objList = new List<GameObject>();
-        public GameObject objPrefab;
-        public ObjPool(GameObject obj)
+        objPrefab = obj;
+    }
+    public GameObject SpawnOne()
+    {
+        GameObject obj = null;
+        if (objList.Count > 0)
         {
-            objPrefab = obj;
+            obj = objList[0];
+            objList.RemoveAt(0);
         }
-        public GameObject SpawnOne()
+        else
         {
-            GameObject obj = null;
-            if (objList.Count > 0)
-            {
-                obj = objList[0];
-                objList.RemoveAt(0);
-            }
-            else
-            {
-                obj = GameObject.Instantiate(objPrefab);
-            }
-            obj.SetActive(true);
-            return obj;
+            obj = GameObject.Instantiate(objPrefab);
         }
-        public void Recycle(GameObject obj)
-        {
-            objList.Add(obj);
-            obj.SetActive(false);
-        }
+        obj.SetActive(true);
+        return obj;
+    }
+    public void Recycle(GameObject obj)
+    {
+        objList.Add(obj);
+        obj.SetActive(false);
     }
 }
