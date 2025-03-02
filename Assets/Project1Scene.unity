@@ -2811,8 +2811,7 @@ MonoBehaviour:
   text_service: {fileID: 1334199292}
   slider_arrive: {fileID: 19466688}
   slider_service: {fileID: 1312261538}
-  nearDistance: 0.5
-  nearDistance2: 0.5
+  nearDistance: 2.2
   carEnterPoint: {fileID: 1889462295}
   carPrefab: {fileID: 8831617625210210033, guid: d2dddae4ecdfd1a4a95d87df23e535c4, type: 3}
 --- !u!4 &1940058398

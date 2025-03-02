@@ -52,7 +52,7 @@ namespace SDProject1
             }
         }
 
-        public float nearDistance = 2f;
+        public float nearDistance = 2.5f;
         public bool IsNearOtherCarTail(Vehicle self)
         {
             var headPos = self.headPos();
@@ -60,7 +60,9 @@ namespace SDProject1
             {
                 if (v == self) continue;
                 if (v.IsReady() == false) continue;
-                if (Vector3.Distance(v.tailPos(), headPos) < nearDistance)
+                //if (Vector3.Distance(v.tailPos(), headPos) < nearDistance)
+                //    return true;
+                if (Vector3.Distance(v.transform.position, headPos) < nearDistance)
                     return true;
             }
             return false;
